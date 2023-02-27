@@ -74,7 +74,7 @@ knn_model = KNeighborsClassifier()
 
 estimators = [('catboost', catboost_model), ('naive_bayes', naive_bayes_model), ('knn', knn_model)]
 
-voting_model = VotingClassifier(estimators=estimators, voting='soft')
+voting_model = VotingClassifier(estimators=estimators, voting='soft', n_jobs = -1)
 
 param_grid = {
     'catboost__learning_rate': [0.01, 0.05, 0.1, 0.15, 0.2],
@@ -83,7 +83,7 @@ param_grid = {
     'knn__n_neighbors': [3, 5, 7, 10, 14],
 }
 
-grid_search = GridSearchCV(voting_model, param_grid, cv=5)
+grid_search = GridSearchCV(voting_model, param_grid, cv=5, n_jobs = -1)
 grid_search.fit(x_train, y_train)
 best_model = grid_search.best_estimator_
 
@@ -120,7 +120,7 @@ catboost_model = CatBoostClassifier()
 
 estimators = [('svm', svm_model), ('catboost', catboost_model)]
 
-stacking_model = StackingClassifier(estimators=estimators, final_estimator=SVC())
+stacking_model = StackingClassifier(estimators=estimators, final_estimator=SVC(), n_jobs = -1)
 
 param_grid = {
     'svm__C': [0.1, 1, 10, 50, 100],
@@ -129,7 +129,7 @@ param_grid = {
     'final_estimator__gamma': [0.1, 1, 10, 50, 100]
 }
 
-grid_search = GridSearchCV(stacking_model, param_grid, cv=5)
+grid_search = GridSearchCV(stacking_model, param_grid, cv=5, n_jobs = -1)
 grid_search.fit(x_train, y_train)
 best_model = grid_search.best_estimator_
 
