@@ -15,19 +15,20 @@ import sklearn.metrics as m
 from catboost import CatBoostClassifier, CatBoostRegressor, Pool
 from sklearn.model_selection import train_test_split
 from sklearn.calibration import calibration_curve, CalibratedClassifierCV
+from sklearn.model_selection import GridSearchCV
 ###################################################################################################################################################
-LOCAL_DATA_PATH = ''
+LOCAL_DATA_PATH = 'context_data'
 SPLIT_SEED = 42
 DATA_FILE = 'competition_data_final_pqt'
 TARGET_FILE = 'public_train.pqt'
 SUBMISSION_FILE = 'submit.pqt'
 ###################################################################################################################################################
-id_to_submit = pq.read_table(f'{SUBMISSION_FILE}').to_pandas()
+id_to_submit = pq.read_table(f'{LOCAL_DATA_PATH}/{SUBMISSION_FILE}').to_pandas()
 
-data = pq.read_table(f'{DATA_FILE}')
+data = pq.read_table(f'{LOCAL_DATA_PATH}/{DATA_FILE}')
 pd.DataFrame([(z.name, z.type) for z in data.schema], columns = [['field', 'type']])
 data.select(['cpe_type_cd']).to_pandas()['cpe_type_cd'].value_counts()
-targets = pq.read_table(f'{TARGET_FILE}')
+targets = pq.read_table(f'{LOCAL_DATA_PATH}/{TARGET_FILE}')
 pd.DataFrame([(z.name, z.type) for z in targets.schema], columns = [['field', 'type']])
 
 data_agg = data.select(['user_id', 'url_host', 'request_cnt']).\
