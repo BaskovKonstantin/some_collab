@@ -67,7 +67,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 
 x_train, x_test, y_train, y_test = train_test_split(df.drop(['user_id', 'age', 'is_male'], axis=1), df['is_male'],
-                                                    test_size=0.999, random_state=SPLIT_SEED)
+                                                    test_size=0.33, random_state=SPLIT_SEED)
 
 catboost_model = CatBoostClassifier()
 naive_bayes_model = GaussianNB()
@@ -78,9 +78,8 @@ estimators = [('catboost', catboost_model)]
 voting_model = VotingClassifier(estimators=estimators, voting='soft', n_jobs=-1)
 
 param_grid = {
-    'catboost__learning_rate': [0.01],
-    # 'catboost__learning_rate': [0.01, 0.05, 0.1, 0.15, 0.2],
-    # 'catboost__depth': [3, 5, 7, 10, 14]
+    'catboost__learning_rate': [0.01, 0.05, 0.1, 0.15, 0.2],
+    'catboost__depth': [3, 5, 7, 10, 14]
 }
 
 
