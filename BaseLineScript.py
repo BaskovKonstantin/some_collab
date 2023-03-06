@@ -1,5 +1,6 @@
 import os
 import warnings
+from joblib import dump, load
 
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 warnings.filterwarnings('ignore')
@@ -66,7 +67,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 
 x_train, x_test, y_train, y_test = train_test_split(df.drop(['user_id', 'age', 'is_male'], axis=1), df['is_male'],
-                                                    test_size=0.33, random_state=SPLIT_SEED)
+                                                    test_size=0.999, random_state=SPLIT_SEED)
 
 catboost_model = CatBoostClassifier()
 naive_bayes_model = GaussianNB()
@@ -77,8 +78,9 @@ estimators = [('catboost', catboost_model)]
 voting_model = VotingClassifier(estimators=estimators, voting='soft', n_jobs=-1)
 
 param_grid = {
-    'catboost__learning_rate': [0.01, 0.05, 0.1, 0.15, 0.2],
-    'catboost__depth': [3, 5, 7, 10, 14]
+    'catboost__learning_rate': [0.01],
+    # 'catboost__learning_rate': [0.01, 0.05, 0.1, 0.15, 0.2],
+    # 'catboost__depth': [3, 5, 7, 10, 14]
 }
 
 
@@ -94,10 +96,10 @@ grid_search = GridSearchCV(voting_model, param_grid, cv=5, n_jobs=-1)
 grid_search.fit(x_train, y_train)
 print_cur_time()
 best_model = grid_search.best_estimator_
-best_model.save_model("/home/kirrog/projects/hackatons/some_collab/models/is_male_catboost.bin")
 print(f'GINI по полу {2 * m.roc_auc_score(y_test, best_model.predict_proba(x_test)[:, 1]) - 1:2.3f}')
 
 best_model.fit(df.drop(['user_id', 'age', 'is_male'], axis=1), df['is_male'])
+dump(best_model, "/home/kirrog/projects/hackatons/some_collab/models/is_male_catboost.bin")
 id_to_submit['is_male'] = best_model.predict_proba(id_to_submit.merge(usr_emb, how='inner', on=['user_id']))[:, 1]
 id_to_submit.head()
 id_to_submit.to_csv(f'{LOCAL_DATA_PATH}/submission_is_male.csv', index=False)
@@ -142,11 +144,11 @@ param_grid = {
 grid_search = GridSearchCV(stacking_model, param_grid, cv=5, n_jobs=-1)
 grid_search.fit(x_train, y_train)
 best_model = grid_search.best_estimator_
-best_model.save_model("/home/kirrog/projects/hackatons/some_collab/models/age_catboost.bin")
 print(m.classification_report('SVC', y_test, best_model.predict_proba(x_test),
                               target_names=['<18', '18-25', '25-34', '35-44', '45-54', '55-65', '65+']))
 ###################################################################################################################################################
 best_model.fit(df.drop(['user_id', 'age', 'is_male'], axis=1), df['age'], verbose=False)
+dump(best_model, "/home/kirrog/projects/hackatons/some_collab/models/age_catboost.bin")
 id_to_submit['age'] = best_model.predict_proba(id_to_submit[['user_id']].merge(usr_emb, how='inner', on=['user_id']))
 ###################################################################################################################################################
 id_to_submit.head()
